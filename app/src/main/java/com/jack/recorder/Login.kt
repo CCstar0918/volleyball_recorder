@@ -2,12 +2,13 @@ package com.jack.recorder
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity.apply
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 
 class Login : AppCompatActivity() {
@@ -17,6 +18,14 @@ class Login : AppCompatActivity() {
         setContentView(R.layout.activity_login)
         val loginCall = intent.getStringExtra("LoginCall")?: "error"
         Log.d("getMain", loginCall)
+
+
+        val temp = findViewById<TextView>(R.id.host_view)
+        temp.setOnClickListener {
+            findViewById<TextView>(R.id.host_view).setTextColor(Color.parseColor("#FF0000"))
+        }
+
+
 
         findViewById<Button>(R.id.game_button).setOnClickListener {
 
