@@ -26,8 +26,9 @@ class Myadapter(private val data: ArrayList<Player>) :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         // 將資料指派給元件呈現
-        holder.player_btn.text = "player1 測試"
-        holder.player_btn.textSize = 30F
+        val num = data[position].num.toString() + " "
+        val name = data[position].name
+        holder.player_btn.text = num + name
 
     } // onBindViewHolder()
 }

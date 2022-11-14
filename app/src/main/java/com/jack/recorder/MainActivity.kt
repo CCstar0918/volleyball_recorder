@@ -5,9 +5,12 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
+import android.widget.Space
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 
 data class Service(var times: Int, var point: Int, var error_time: Int )
 
@@ -33,6 +36,18 @@ data class Player(val num: Int, val name: String) {
     var fault = Fault(0, 0, 0, 0)
 
 } // Player()
+class NewPlayerContract: ActivityResultContract<Unit, Bundle>() { // NewPlayerContract
+    override fun createIntent(context: Context, input: Unit): Intent {
+        return Intent(context, NewPlayer::class.java).apply {
+            // 不放 anything
+        }
+    }
+
+    override fun parseResult(resultCode: Int, intent: Intent?): Bundle {
+        return intent?.getBundleExtra("newplayer")!!
+    }
+
+}
 
 class LoginActivityContract: ActivityResultContract<String, Bundle>() {
     override fun createIntent(context: Context, input: String): Intent {
@@ -44,8 +59,6 @@ class LoginActivityContract: ActivityResultContract<String, Bundle>() {
 
     override fun parseResult(resultCode: Int, intent: Intent?): Bundle {
         return intent?.getBundleExtra("info")!!
-
-
     }
 }
 
@@ -58,13 +71,19 @@ class MainActivity : AppCompatActivity() {
     private var player_list = ArrayList<Player>()
 
 
+    private val newplayerForResult = registerForActivityResult(NewPlayerContract()) { result ->
+        // get the result from NewPlayer activity: id, name
+        player_list.add(Player(result.getInt("id")!!, result.getString("name")!!))
+        adapter.notifyDataSetChanged()
+    }
+
     private val startForResult = registerForActivityResult(LoginActivityContract()) { result ->
         // get the result from Login activity: host name, guest name, game
         hostname = result.getString("host_name")!!
         guestname = result.getString("guest_name")!!
         game = result.getString("game")!!
 
-        Log.d("123","imes.toString()")
+        //Log.d("123","imes.toString()")
 
     }
 
@@ -73,6 +92,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val recyclerView = findViewById<RecyclerView>(R.id.player_recyclerView)
+        val btn_add = findViewById<Button>(R.id.add_btn)
 
         val l = LinearLayoutManager(this)
         recyclerView.layoutManager = l
@@ -80,13 +100,15 @@ class MainActivity : AppCompatActivity() {
         adapter = Myadapter(player_list)
         recyclerView.adapter = adapter
 
+        btn_add.setOnClickListener {
+            newplayerForResult.launch(Unit)
+        }
 
-        for ( i in 1 .. 20 ) {
-            player_list.add(Player(1, "球員一號"))
 
-        } // for
+/*
+        player_list.add(Player(1, "球員一號"))
         adapter.notifyDataSetChanged()
-
+ */
 
 
         // var player = Player(6, "Jack")
