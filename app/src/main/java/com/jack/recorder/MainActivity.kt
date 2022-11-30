@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.Space
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -36,6 +37,27 @@ data class Player(val num: Int, val name: String) {
     var fault = Fault(0, 0, 0, 0)
 
 } // Player()
+
+// ********** Contract **********
+
+class RecordContract: ActivityResultContract<Unit, Bundle>() { // RecordContract
+    override fun createIntent(context: Context, input: Unit): Intent {
+        return Intent(context, Action::class.java).apply {
+            // 不放 anything
+        }
+    }
+
+    override fun parseResult(resultCode: Int, intent: Intent?): Bundle {
+
+        val b = Bundle()
+        b.putString("action", "0")
+        return intent?.getBundleExtra("record") ?: b
+
+        // 若使用 back 鍵，會沒有 return value
+    }
+
+}
+
 class NewPlayerContract: ActivityResultContract<Unit, Bundle>() { // NewPlayerContract
     override fun createIntent(context: Context, input: Unit): Intent {
         return Intent(context, NewPlayer::class.java).apply {
@@ -44,7 +66,10 @@ class NewPlayerContract: ActivityResultContract<Unit, Bundle>() { // NewPlayerCo
     }
 
     override fun parseResult(resultCode: Int, intent: Intent?): Bundle {
-        return intent?.getBundleExtra("newplayer")!!
+        val b = Bundle()
+        b.putInt("id", 0)
+        return intent?.getBundleExtra("newplayer") ?: b
+        // 若使用 back 鍵，會沒有 return value
     }
 
 }
@@ -62,7 +87,9 @@ class LoginActivityContract: ActivityResultContract<String, Bundle>() {
     }
 }
 
-class MainActivity : AppCompatActivity() {
+// ********** Contract **********
+
+class MainActivity : AppCompatActivity(), Myadapter.OnItemClickListener {
     private var hostname = "A"
     private var guestname = "B"
     private var game = "0"
@@ -70,11 +97,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: Myadapter
     private var player_list = ArrayList<Player>()
 
+    // ********** Register Contract **********
+    private val recordForResult = registerForActivityResult(RecordContract()) { result ->
+        // get the result from NewPlayer activity: id, name
+
+        if(result.getString("action") != "0") {
+            Toast.makeText(this,result.getString("action"), Toast.LENGTH_LONG).show()
+        }
+    }
 
     private val newplayerForResult = registerForActivityResult(NewPlayerContract()) { result ->
         // get the result from NewPlayer activity: id, name
-        player_list.add(Player(result.getInt("id")!!, result.getString("name")!!))
-        adapter.notifyDataSetChanged()
+
+        if(result.getInt("id") != 0) {
+            player_list.add(Player(result.getInt("id")!!, result.getString("name")!!))
+            adapter.notifyDataSetChanged()
+        }
     }
 
     private val startForResult = registerForActivityResult(LoginActivityContract()) { result ->
@@ -82,43 +120,32 @@ class MainActivity : AppCompatActivity() {
         hostname = result.getString("host_name")!!
         guestname = result.getString("guest_name")!!
         game = result.getString("game")!!
-
-        //Log.d("123","imes.toString()")
-
     }
 
+    // ********** Register Contract **********
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val recyclerView = findViewById<RecyclerView>(R.id.player_recyclerView)
+        recyclerView.setHasFixedSize(true)
         val btn_add = findViewById<Button>(R.id.add_btn)
 
-        val l = LinearLayoutManager(this)
-        recyclerView.layoutManager = l
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
-        adapter = Myadapter(player_list)
+        adapter = Myadapter(player_list, this)
         recyclerView.adapter = adapter
 
+
+
+        // setting new player button
         btn_add.setOnClickListener {
             newplayerForResult.launch(Unit)
         }
-
-
-/*
-        player_list.add(Player(1, "球員一號"))
-        adapter.notifyDataSetChanged()
- */
-
-
-        // var player = Player(6, "Jack")
-        // player.service.times++
-
         startForResult.launch("From Main to Login")
     }
 
-
-
-
-
+    override fun onItemClick(position: Int) {
+        recordForResult.launch(Unit)
+    }
 }

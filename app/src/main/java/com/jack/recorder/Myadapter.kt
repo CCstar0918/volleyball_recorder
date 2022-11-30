@@ -1,19 +1,38 @@
 package com.jack.recorder
 
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.AdapterView.OnItemClickListener
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class Myadapter(private val data: ArrayList<Player>) :
-    RecyclerView.Adapter<Myadapter.ViewHolder>() {
+
+
+
+class Myadapter(private val data: ArrayList<Player>, private val listener: OnItemClickListener) : RecyclerView.Adapter<Myadapter.ViewHolder>() {
+
     // 實作 RecyclerView.ViewHolder 來儲存 view
-    class ViewHolder(v: View): RecyclerView.ViewHolder(v) {
+    inner class ViewHolder(v: View): RecyclerView.ViewHolder(v), View.OnClickListener { // class ViewHolder()
         // 連結畫面中的元件
-        val player_btn = v.findViewById<Button>(R.id.player_btn)
-    } // class ViewHolder()
+
+        val player_btn = v.findViewById<TextView>(R.id.player_btn)
+
+        init {
+            v.setOnClickListener(this)
+        }
+
+        override fun onClick(p0: View?) {
+            val position = adapterPosition
+            listener.onItemClick(position)
+        }
+    }
+
+    interface OnItemClickListener {
+        fun onItemClick(position: Int)
+    }
 
     override fun getItemCount() = data.size
 
@@ -28,7 +47,12 @@ class Myadapter(private val data: ArrayList<Player>) :
         // 將資料指派給元件呈現
         val num = data[position].num.toString() + " "
         val name = data[position].name
+        //Log.d("name", name)
         holder.player_btn.text = num + name
-
     } // onBindViewHolder()
+
+
+
+
+
 }

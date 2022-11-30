@@ -19,12 +19,12 @@ class Login : AppCompatActivity() {
         val loginCall = intent.getStringExtra("LoginCall")?: "error"
         Log.d("getMain", loginCall)
 
-
+/*
         val temp = findViewById<TextView>(R.id.host_view)
         temp.setOnClickListener {
             findViewById<TextView>(R.id.host_view).setTextColor(Color.parseColor("#FF0000"))
         }
-
+ */
 
 
         findViewById<Button>(R.id.game_button).setOnClickListener {
