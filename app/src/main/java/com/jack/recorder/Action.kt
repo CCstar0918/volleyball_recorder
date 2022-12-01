@@ -22,6 +22,9 @@ class Action : AppCompatActivity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_action)
+        val position : Int = intent.getIntExtra("position",-1)
+        b.putInt("position", position)
+
         val attack = findViewById<Button>(R.id.btn_attack)
         val blocker = findViewById<Button>(R.id.btn_block)
         val liftinger = findViewById<Button>(R.id.btn_lift)
@@ -43,96 +46,50 @@ class Action : AppCompatActivity(), View.OnClickListener {
     override fun onClick(p0: View?) {
         when (p0?.id) {
             R.id.btn_attack -> {
-                b.putString("action", "ATTACK")
-                DialogEvent(3)
+                b.putString("action", "攻擊")
+                DialogEvent(attackList)
             }
             R.id.btn_block -> {
-                b.putString("action", "BLOCK")
-                DialogEvent(4)
+                b.putString("action", "攔網")
+                DialogEvent(blockList)
             }
             R.id.btn_lift -> {
-                b.putString("action", "LIFT")
-                DialogEvent(5)
+                b.putString("action", "舉球")
+                DialogEvent(liftList)
             }
             R.id.btn_receive -> {
-                b.putString("action", "RECEIVE")
-                DialogEvent(2)
+                b.putString("action", "接球")
+                DialogEvent(receiveList)
             }
             R.id.btn_receiveservice -> {
-                b.putString("action", "RECEIVESERVICE")
-                DialogEvent(2)
+                b.putString("action", "接發")
+                DialogEvent(receiveList)
             }
             R.id.btn_service -> {
-                b.putString("action", "SERVICE")
-                DialogEvent(1)
+                b.putString("action", "發球")
+                DialogEvent(serviceList)
             }
             R.id.btn_fault -> {
-                b.putString("action", "FAULT")
-                DialogEvent(6)
+                b.putString("action", "犯規")
+                DialogEvent(faultList)
             }
         } // when
-
-
 
         bag_intent = Intent().apply {
             putExtra("record", b)
         }
-        //setResult(Activity.RESULT_OK, bag_intent)
-        //finish()
     } // onClick
 
-    private fun DialogEvent(temp: Int) {
-        // 1 -> 發球,  2 -> 接球,  3 -> 攻擊, 4 -> 攔網, 5 -> 舉球, 6 -> fault
-        when(temp) {
-            1 ->
-                AlertDialog.Builder(this)
-                    .setItems(serviceList.toTypedArray()) { _, which ->
-                        Toast.makeText(this, serviceList[which], Toast.LENGTH_LONG).show()
-                        setResult(Activity.RESULT_OK, bag_intent)
-                        finish()
-                    }
-                    .show()
-            2 ->
-                AlertDialog.Builder(this)
-                    .setItems(receiveList.toTypedArray()) { _, which ->
-                        Toast.makeText(this, receiveList[which], Toast.LENGTH_LONG).show()
-                        setResult(Activity.RESULT_OK, bag_intent)
-                        finish()
-                    }
-                    .show()
-            3 ->
-                AlertDialog.Builder(this)
-                    .setItems(attackList.toTypedArray()) { _, which ->
-                        Toast.makeText(this, attackList[which], Toast.LENGTH_LONG).show()
-                        setResult(Activity.RESULT_OK, bag_intent)
-                        finish()
-                    }
-                    .show()
-            4 ->
-                AlertDialog.Builder(this)
-                    .setItems(blockList.toTypedArray()) { _, which ->
-                        Toast.makeText(this, blockList[which], Toast.LENGTH_LONG).show()
-                        setResult(Activity.RESULT_OK, bag_intent)
-                        finish()
-                    }
-                    .show()
-            5 ->
-                AlertDialog.Builder(this)
-                    .setItems(liftList.toTypedArray()) { _, which ->
-                        Toast.makeText(this, liftList[which], Toast.LENGTH_LONG).show()
-                        setResult(Activity.RESULT_OK, bag_intent)
-                        finish()
-                    }
-                    .show()
-            6 ->
-                AlertDialog.Builder(this)
-                    .setItems(faultList.toTypedArray()) { _, which ->
-                        Toast.makeText(this, faultList[which], Toast.LENGTH_LONG).show()
-                        setResult(Activity.RESULT_OK, bag_intent)
-                        finish()
-                    }
-                    .show()
-        }
+    private fun DialogEvent(temp: List<String>) {
+        AlertDialog.Builder(this)
+            .setItems(temp.toTypedArray()) { _, which ->
+                //Toast.makeText(this, serviceList[which], Toast.LENGTH_LONG).show()
+                b.putString("level", temp[which])
+                setResult(Activity.RESULT_OK, bag_intent)
+                finish()
+            }
+            .show()
+
 
     } // DialogEvent()
 }

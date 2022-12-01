@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
+import kotlin.io.path.createTempDirectory
 
 data class Service(var times: Int, var point: Int, var error_time: Int )
 
@@ -25,7 +26,7 @@ data class Block(var touch: Int, var touchout: Int, var point: Int, var error_ti
 
 data class Lifting(var times: Int, var error_time: Int)
 
-data class Fault( var twice: Int, var holding: Int, var touchnet: Int, var passingline: Int)
+data class Fault( var twice: Int, var holding: Int, var touchnet: Int, var passingline: Int, var backattack: Int, var foot: Int, var other: Int)
 
 data class Player(val num: Int, val name: String) {
     var service = Service(0, 0, 0)
@@ -34,16 +35,16 @@ data class Player(val num: Int, val name: String) {
     var attack = Attack(0, 0, 0, 0, 0, 0)
     var block = Block(0, 0, 0, 0)
     var lifting = Lifting(0, 0)
-    var fault = Fault(0, 0, 0, 0)
+    var fault = Fault(0, 0, 0, 0, 0, 0, 0)
 
 } // Player()
 
 // ********** Contract **********
 
-class RecordContract: ActivityResultContract<Unit, Bundle>() { // RecordContract
-    override fun createIntent(context: Context, input: Unit): Intent {
+class RecordContract: ActivityResultContract<Int, Bundle>() { // RecordContract
+    override fun createIntent(context: Context, input: Int): Intent {
         return Intent(context, Action::class.java).apply {
-            // 不放 anything
+            putExtra("position", input)
         }
     }
 
@@ -94,15 +95,78 @@ class MainActivity : AppCompatActivity(), Myadapter.OnItemClickListener {
     private var guestname = "B"
     private var game = "0"
 
+    private var miss: Int = 0
+
     private lateinit var adapter: Myadapter
     private var player_list = ArrayList<Player>()
 
     // ********** Register Contract **********
     private val recordForResult = registerForActivityResult(RecordContract()) { result ->
-        // get the result from NewPlayer activity: id, name
+        // recording the player data
 
         if(result.getString("action") != "0") {
-            Toast.makeText(this,result.getString("action"), Toast.LENGTH_LONG).show()
+            when( result.getString("action") ) {
+                "攻擊" -> {
+                    when( result.getString("level") ) {
+                        "次數" -> player_list[result.getInt("position")].attack.Time++
+                        "扣球" -> player_list[result.getInt("position")].attack.spike++
+                        "扣球得分" -> player_list[result.getInt("position")].attack.spikepoint++
+                        "吊球" -> player_list[result.getInt("position")].attack.drop++
+                        "吊球得分" -> player_list[result.getInt("position")].attack.droppoint++
+                        "失誤" -> player_list[result.getInt("position")].attack.error_time++
+                    } // when
+                } // "攻擊"
+                "攔網" -> {
+                    when( result.getString("level") ) {
+                        "觸球" -> player_list[result.getInt("position")].block.touch++
+                        "Touch Out" -> player_list[result.getInt("position")].block.touchout++
+                        "得分" -> player_list[result.getInt("position")].block.point++
+                        "失誤" -> player_list[result.getInt("position")].block.error_time++
+                    } // when
+                } // "攔網"
+                "舉球" -> {
+                    when( result.getString("level") ) {
+                        "次數" -> player_list[result.getInt("position")].lifting.times++
+                        "失誤" -> player_list[result.getInt("position")].lifting.error_time++
+                    } // when
+                } // "舉球"
+                "接球" -> {
+                    when( result.getString("level") ) {
+                        "A" -> player_list[result.getInt("position")].receive.A++
+                        "B" -> player_list[result.getInt("position")].receive.B++
+                        "C" -> player_list[result.getInt("position")].receive.C++
+                        "失誤" -> player_list[result.getInt("position")].receive.error_time++
+                    } // when
+                } // "接球"
+                "接發" -> {
+                    when( result.getString("level") ) {
+                        "A" -> player_list[result.getInt("position")].receiveservice.A++
+                        "B" -> player_list[result.getInt("position")].receiveservice.B++
+                        "C" -> player_list[result.getInt("position")].receiveservice.C++
+                        "失誤" -> player_list[result.getInt("position")].receiveservice.error_time++
+                    } // when
+                } // "接發"
+                "發球" -> {
+                    when( result.getString("level") ) {
+                        "次數" -> player_list[result.getInt("position")].service.times++
+                        "得分" -> player_list[result.getInt("position")].service.point++
+                        "失誤" -> player_list[result.getInt("position")].service.error_time++
+                    } // when
+                } // "發球"
+                "犯規" -> {
+                    when( result.getString("level") ) {
+                        "2次" -> player_list[result.getInt("position")].fault.twice++
+                        "持球" -> player_list[result.getInt("position")].fault.holding++
+                        "觸網" -> player_list[result.getInt("position")].fault.touchnet++
+                        "越界" -> player_list[result.getInt("position")].fault.passingline++
+                        "後排擊球" -> player_list[result.getInt("position")].fault.backattack++
+                        "發球踩線" -> player_list[result.getInt("position")].fault.foot++
+                        "其他" -> player_list[result.getInt("position")].fault.other++
+                    } // when
+                } // "犯規"
+            }
+            val str : String = player_list[result.getInt("position")].name + " " + result.getString("action") + " " + result.getString("level")
+            Toast.makeText(this,str, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -130,12 +194,19 @@ class MainActivity : AppCompatActivity(), Myadapter.OnItemClickListener {
         val recyclerView = findViewById<RecyclerView>(R.id.player_recyclerView)
         recyclerView.setHasFixedSize(true)
         val btn_add = findViewById<Button>(R.id.add_btn)
+        val btn_miss = findViewById<Button>(R.id.miss_btn)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         adapter = Myadapter(player_list, this)
         recyclerView.adapter = adapter
 
+
+
+        btn_miss.setOnClickListener {
+            miss++
+            Toast.makeText(this, "對方失誤 " + miss.toString(), Toast.LENGTH_LONG).show()
+        }
 
 
         // setting new player button
@@ -146,6 +217,7 @@ class MainActivity : AppCompatActivity(), Myadapter.OnItemClickListener {
     }
 
     override fun onItemClick(position: Int) {
-        recordForResult.launch(Unit)
+        // Log.d("who", player_list[position].name)
+        recordForResult.launch(position)
     }
 }

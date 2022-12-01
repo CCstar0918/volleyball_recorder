@@ -19,25 +19,19 @@ class Login : AppCompatActivity() {
         val loginCall = intent.getStringExtra("LoginCall")?: "error"
         Log.d("getMain", loginCall)
 
-/*
-        val temp = findViewById<TextView>(R.id.host_view)
-        temp.setOnClickListener {
-            findViewById<TextView>(R.id.host_view).setTextColor(Color.parseColor("#FF0000"))
-        }
- */
-
+        val host_name = findViewById<EditText>(R.id.host)
+        val guest_name = findViewById<EditText>(R.id.guest)
+        val game = findViewById<EditText>(R.id.game)
 
         findViewById<Button>(R.id.game_button).setOnClickListener {
 
-            val host_name = findViewById<EditText>(R.id.host).text.toString()
-            val guest_name = findViewById<EditText>(R.id.guest).text.toString()
-            val game = findViewById<EditText>(R.id.game).text.toString()
 
-            if ( guest_name == "" || game == "" ) {
-                if ( guest_name == "" ) {
+
+            if ( guest_name.text.toString() == "" || game.text.toString() == "" ) {
+                if ( guest_name.text.toString() == "" ) {
                     Toast.makeText(this, "請輸入 guest name", Toast.LENGTH_LONG).show()
                 } // if
-                if ( game == "" ) {
+                if ( game.text.toString() == "" ) {
                     Toast.makeText(this, "請輸入 game", Toast.LENGTH_LONG).show()
                 } // if
             } // if
@@ -45,9 +39,9 @@ class Login : AppCompatActivity() {
             // guest_name and game must not be NULL
             else {
                 val bag = Bundle()
-                bag.putString("host_name", host_name)
-                bag.putString("guest_name", guest_name)
-                bag.putString("game", game)
+                bag.putString("host_name", host_name.text.toString())
+                bag.putString("guest_name", guest_name.text.toString())
+                bag.putString("game", game.text.toString())
                 val bag_intent = Intent().apply {
                     putExtra("info", bag)
                 }
