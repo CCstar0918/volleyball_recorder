@@ -89,7 +89,7 @@ class LoginActivityContract: ActivityResultContract<String, Bundle>() {
 }
 
 // ********** Contract **********
-
+var player_list = ArrayList<Player>()
 class MainActivity : AppCompatActivity(), Myadapter.OnItemClickListener {
     private var hostname = "A"
     private var guestname = "B"
@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity(), Myadapter.OnItemClickListener {
     private var miss: Int = 0
 
     private lateinit var adapter: Myadapter
-    private var player_list = ArrayList<Player>()
+
 
     // ********** Register Contract **********
     private val recordForResult = registerForActivityResult(RecordContract()) { result ->
@@ -165,7 +165,7 @@ class MainActivity : AppCompatActivity(), Myadapter.OnItemClickListener {
                     } // when
                 } // "犯規"
             }
-            val str : String = player_list[result.getInt("position")].name + " " + result.getString("action") + " " + result.getString("level")
+            val str : String = player_list[result.getInt("position")].num.toString() + " " + player_list[result.getInt("position")].name + " "  + result.getString("action") + " " + result.getString("level")
             Toast.makeText(this,str, Toast.LENGTH_LONG).show()
         }
     }
@@ -195,6 +195,7 @@ class MainActivity : AppCompatActivity(), Myadapter.OnItemClickListener {
         recyclerView.setHasFixedSize(true)
         val btn_add = findViewById<Button>(R.id.add_btn)
         val btn_miss = findViewById<Button>(R.id.miss_btn)
+        val btn_statistice = findViewById<Button>(R.id.statistice_btn)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -203,16 +204,32 @@ class MainActivity : AppCompatActivity(), Myadapter.OnItemClickListener {
 
 
 
+        // btn setOnClickListener
         btn_miss.setOnClickListener {
             miss++
-            Toast.makeText(this, "對方失誤 " + miss.toString(), Toast.LENGTH_LONG).show()
+            btn_miss.setText("對方失誤 " + miss.toString())
         }
-
 
         // setting new player button
         btn_add.setOnClickListener {
             newplayerForResult.launch(Unit)
         }
+
+        btn_statistice.setOnClickListener{
+            val alldata = Bundle()
+            alldata.putString("hostname", hostname)
+            alldata.putString("guestname", guestname)
+            alldata.putString("game", game)
+            alldata.putString("miss", miss.toString())
+            //alldata.putSerializable("datalist", player_list)
+            Intent( this, Endgame::class.java).apply {
+                putExtra("data",alldata)
+                startActivity(this)
+            }
+        }
+
+        // btn setOnClickListener
+
         startForResult.launch("From Main to Login")
     }
 
