@@ -116,7 +116,7 @@ class  DataAdapter(private val data: ArrayList<Player>) : RecyclerView.Adapter<D
         if ( data[position].fault.backattack != 0)
             temp = temp + " 後排擊球" + data[position].fault.backattack.toString()
         if ( data[position].fault.foot != 0)
-            temp = temp + " 發球採現" + data[position].fault.foot.toString()
+            temp = temp + " 發球踩線" + data[position].fault.foot.toString()
         if ( data[position].fault.other != 0)
             temp = temp + " 其他" + data[position].fault.other.toString()
         holder.fd.text = temp
